@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Marathon Plan</title>
+<style>
+:root{--bg:#f6f7f5;--card:#fff;--tx:#1c2321;--mu:#5d6b66;--ac:#0f766e;--ac2:#ccfbf1;--bd:#e1e5e2;--wa:#b45309;--wb:#fef3c7;--q:#c2410c;--qb:#ffedd5;--l:#1d4ed8;--lb:#dbeafe;--s:#6d28d9;--sb:#ede9fe;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111514;--card:#1a201e;--tx:#e8eeeb;--mu:#9aa8a2;--ac:#2dd4bf;--ac2:#0f3d38;--bd:#2a3330;--wa:#fbbf24;--wb:#3a2e0d;--q:#fb923c;--qb:#3b2410;--l:#93c5fd;--lb:#1b2a4a;--s:#c4b5fd;--sb:#2a2147}}
+html{color-scheme:light dark;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 2px}h2{font-size:18px;margin:20px 0 8px}h3{font-size:16px;margin:0}
+.mu{color:var(--mu);font-size:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:10px 0}
+.day{display:grid;grid-template-columns:44px 1fr;gap:12px}
+.dn{font-weight:700;font-size:13px;color:var(--mu);padding-top:2px}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:4px}
+.t-e{background:var(--ac2);color:var(--ac)}.t-q{background:var(--qb);color:var(--q)}.t-l{background:var(--lb);color:var(--l)}.t-s{background:var(--sb);color:var(--s)}.t-r{background:var(--bd);color:var(--mu)}
+.today{outline:2px solid var(--ac)}
+label{display:block;font-size:14px;font-weight:600;margin:12px 0 4px}
+input,select{width:100%;font:inherit;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 13px;border-radius:99px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-size:14px}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.pri{width:100%;margin-top:14px;padding:13px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700}
+.wk{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wk button{width:44px;height:44px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:18px}
+.warn{background:var(--wb);color:var(--wa);border-radius:12px;padding:11px 13px;font-size:14px;margin:10px 0}
+.ex{padding:10px 0;border-top:1px solid var(--bd)}.ex:first-of-type{border-top:0}
+.ex b{display:block}.ex span{font-size:14px;color:var(--mu)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;border:0;background:none;color:var(--mu);font:inherit;font-size:12px;padding:8px 0;border-radius:10px}
+nav button.on{color:var(--ac);font-weight:700;background:var(--ac2)}
+nav i{display:block;font-style:normal;font-size:20px}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden}.bar div{height:100%;background:var(--ac)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<section id="v-plan"></section>
+<section id="v-str" class="hide"></section>
+<section id="v-set" class="hide"></section>
+</main>
+<nav>
+<button data-v="plan" class="on"><i>🏃</i>Program</button>
+<button data-v="str"><i>💪</i>Strength</button>
+<button data-v="set"><i>⚙️</i>Profil</button>
+</nav>
+<script>
+var KEY="mp_v1";
+var S={race:"",goal:"4:30",km:30,long:14,cp:0,inj:[],wk:0,sess:"A"};
+try{var r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+var INJ={
+plantar:{n:"Plantar fasciitis",run:"Kurangi volume 20–30%, hindari tanjakan curam dan lari di permukaan keras. Ganti sesi cepat dengan easy atau sepeda bila nyeri pagi hari memburuk.",ex:[
+["Toe-elevated calf raise","3×12, turun 3 detik","Ganjal jempol kaki dengan handuk gulung, beban bertahap"],
+["Soleus raise (lutut ditekuk)","3×15","Duduk atau bawa beban di paha"],
+["Short foot","3×10 × tahan 5 detik","Angkat lengkung kaki tanpa melipat jari"],
+["Gulung bola di telapak kaki","2 menit/kaki","Tekanan ringan, bukan sampai nyeri tajam"]]},
+shin:{n:"Shin splints",run:"Turunkan frekuensi lari dulu, mis. selang-seling hari. Hindari interval dan downhill. Naikkan cadence sedikit (langkah lebih pendek).",ex:[
+["Tibialis raise","3×15–20","Punggung bersandar dinding, angkat ujung kaki"],
+["Soleus raise","3×15","Lutut ditekuk, gerakan lambat"],
+["Single-leg calf raise","3×12","Turun 3 detik"],
+["Hip abduction side-lying","3×15","Kontrol panggul agar tidak jatuh ke dalam"]]},
+itbs:{n:"ITBS",run:"Kurangi volume 20–30%, hindari turunan panjang dan jalur miring. Stop lari bila nyeri sisi luar lutut muncul pada menit tertentu yang sama.",ex:[
+["Clamshell dengan band","3×15","Panggul stabil, jangan memutar badan"],
+["Side plank + angkat kaki atas","3×20–30 detik","Pinggul tetap tinggi"],
+["Single-leg glute bridge","3×10","Tahan 2 detik di atas"],
+["Step-down eksentrik","3×8","Lutut sejajar jari kaki, turun pelan"]]},
+knee:{n:"Runner’s knee (patellofemoral)",run:"Kurangi downhill dan tangga. Perpendek long run sementara, jaga lutut tetap sejalur dengan jari kaki.",ex:[
+["Spanish squat / wall sit","4×30 detik","Isometrik, lutut ±60°"],
+["Step-up rendah","3×10","Dorong dengan tumit"],
+["Terminal knee extension (band)","3×15","Kontrol di akhir luruskan lutut"],
+["Hip external rotation (band)","3×12","Perkuat glute medius"]]},
+achilles:{n:"Achilles tendinopathy",run:"Hindari sprint, hill repeats, dan lonjakan volume mendadak. Pemanasan dengan jalan cepat sebelum lari.",ex:[
+["Isometric calf hold","5×30 detik","Di ujung kaki, tahan; pereda nyeri"],
+["Slow calf raise","3×12","Naik-turun 3 detik; jangan turun di bawah tangga bila nyeri di tempelan tendon"],
+["Soleus raise","3×15","Lutut ditekuk"],
+["Single-leg balance","3×30 detik","Permukaan stabil lalu tidak stabil"]]}
+};
+var BASE=[
+["Glute bridge","3×12","Tahan 2 detik"],
+["Split squat","3×8/kaki","Badan tegak, lutut stabil"],
+["Side plank","3×30 detik","Kedua sisi"],
+["Dead bug","3×10","Punggung bawah menempel lantai"],
+["Single-leg Romanian deadlift","3×8/kaki","Beban ringan, panggul rata"]];
+
+
+var ST=null;try{ST=JSON.parse(localStorage.getItem("mp_strava"))}catch(e){}
+function sync(){return fetch("/api/activities",{credentials:"same-origin"}).then(function(r){if(r.status===401){ST={auth:false};try{localStorage.removeItem("mp_strava")}catch(e){}return}if(!r.ok)throw 0;return r.json()}).then(function(d){if(!d||!d.auth)return;ST=Object.assign({at:Date.now()},d);if(d.avgKm4>0){S.km=Math.round(d.avgKm4);S.long=Math.round(d.longest)}save();try{localStorage.setItem("mp_strava",JSON.stringify(ST))}catch(e){}}).catch(function(){})}
+function resync(){sync().then(function(){show("set")})}
+function stravaCard(){
+ if(!ST||!ST.auth)return "<div class='card'><div class='mu'>Masuk dengan Strava agar mileage, long run, dan watt terisi otomatis.</div><a href='/api/auth/login' style='display:block;text-align:center;text-decoration:none;margin-top:12px;padding:13px;border-radius:12px;background:var(--ac);color:#fff;font-weight:700'>Masuk dengan Strava</a></div>";
+ return "<div class='card'><b>Terhubung ke Strava</b><div class='mu'>"+ST.avgKm4+" km/minggu (4 minggu terakhir) · long run terpanjang "+ST.longest+" km"+(ST.avgWatts?" · rata-rata "+ST.avgWatts+" W (isi CP manual di atas)":"")+"<br>Sinkron terakhir: "+new Date(ST.at).toLocaleString("id-ID")+"</div><button class='pri' onclick='resync()'>Sinkron ulang</button><p class='mu'><a href='/api/auth/logout'>Keluar dari Strava</a></p></div>"}
+function p2s(sec){sec=Math.round(sec);return Math.floor(sec/60)+":"+("0"+sec%60).slice(-2)}
+function goalSec(){var a=(S.goal||"4:30").split(":");return (+a[0]*3600+(+a[1]||0)*60)}
+function mp(){return goalSec()/42.195}
+function pw(a,b){return S.cp>0?" · "+Math.round(S.cp*a)+"–"+Math.round(S.cp*b)+" W":""}
+var P={easy:function(){return p2s(mp()+75)+"–"+p2s(mp()+105)},mp:function(){return p2s(mp())},tempo:function(){return p2s(mp()-15)},int:function(){return p2s(mp()-35)}};
+
+function weeksN(){
+ if(S.race){var d=Math.ceil((new Date(S.race)-new Date())/6048e5);if(d>=6&&d<=24)return d}
+ return 16}
+function plan(){
+ var N=weeksN(),peak=Math.min(Math.max(S.km*1.6,50),90),inj=S.inj.length>0,out=[],km=Math.max(+S.km||25,15);
+ for(var w=1;w<=N;w++){
+  var left=N-w,ph=w<=N*0.35?"Base":left>=3?(w<=N*0.7?"Build":"Peak"):"Taper",tot;
+  if(left===2)tot=peak*0.75;else if(left===1)tot=peak*0.55;else if(left===0)tot=peak*0.3;
+  else if(w%4===0)tot=km*0.8;else{km=Math.min(km*1.08,peak);tot=km}
+  if(inj)tot*=0.85;
+  var lr=Math.min(tot*0.3,32),rec=(w%4===0&&left>2);
+  var q;
+  if(left===0)q=["Q","Shakeout 20–25 mnt + 4 strides","easy"];
+  else if(inj)q=["E","Tempo ringan 15–20 mnt @ "+P.tempo()+"/km"+pw(.9,.95)+" (ganti easy bila nyeri)","tempo"];
+  else if(ph==="Base")q=["Q","Strides 6×20 detik + tempo 15 mnt @ "+P.tempo()+"/km"+pw(.95,1),"tempo"];
+  else if(ph==="Build")q=["Q","Interval 5×1 km @ "+P.int()+"/km"+pw(1.05,1.1)+", jog 2 mnt","int"];
+  else if(ph==="Peak")q=["Q","Tempo 8–10 km @ "+P.tempo()+"/km"+pw(.95,1),"tempo"];
+  else q=["Q","Tempo 6 km @ "+P.tempo()+"/km"+pw(.95,1),"tempo"];
+  var longTxt=left===0?"🏁 HARI RACE 42,195 km":(ph==="Peak"&&!inj?lr.toFixed(0)+" km easy, 8–12 km terakhir @ "+P.mp()+"/km"+pw(.85,.9):lr.toFixed(0)+" km easy @ "+P.easy()+"/km"+pw(.7,.8));
+  out.push({w:w,ph:ph,tot:tot,rec:rec,d:[
+   ["Sen","S","Strength A (ringan)"],
+   ["Sel","E",(tot*0.22).toFixed(1)+" km easy @ "+P.easy()+"/km"+pw(.7,.8)],
+   ["Rab","S","Strength B (inti + kaki)"],
+   ["Kam",q[0],(left===0?"":(tot*0.26).toFixed(1)+" km total · ")+q[1]],
+   ["Jum","R","Istirahat / mobilitas"],
+   ["Sab","E",(tot*0.22).toFixed(1)+" km easy @ "+P.easy()+"/km"+pw(.7,.8)],
+   ["Min","L",longTxt]]});
+ }
+ return out}
+
+var TAG={E:["t-e","Easy"],Q:["t-q","Kualitas"],L:["t-l","Long run"],S:["t-s","Strength"],R:["t-r","Rest"]};
+var $=function(i){return document.getElementById(i)};
+
+function viewPlan(){
+ var pl=plan();if(S.wk>=pl.length)S.wk=pl.length-1;var W=pl[S.wk],h="";
+ var raceTxt=S.race?"Race: "+S.race:"Tanggal race belum diisi (default 16 minggu)";
+ h+="<h1>Marathon Plan</h1><div class='mu'>Target "+S.goal+" · pace MP "+P.mp()+"/km"+(S.cp>0?" · CP "+S.cp+" W":"")+" · "+raceTxt+"</div>";
+ h+="<div class='card'><div class='wk'><button onclick='mv(-1)' aria-label='Minggu sebelumnya'>‹</button><div style='text-align:center'><h3>Minggu "+W.w+" / "+pl.length+"</h3><div class='mu'>"+W.ph+(W.rec?" · pekan pemulihan":"")+" · ±"+W.tot.toFixed(0)+" km</div></div><button onclick='mv(1)' aria-label='Minggu berikutnya'>›</button></div><div class='bar' style='margin-top:12px'><div style='width:"+((W.w/pl.length)*100)+"%'></div></div></div>";
+ if(S.inj.length)h+="<div class='warn'>Mode cedera aktif ("+S.inj.map(function(k){return INJ[k].n}).join(", ")+"): volume dikurangi ±15%, sesi interval diganti tempo ringan. "+S.inj.map(function(k){return INJ[k].run}).join(" ")+"</div>";
+ var td=(new Date().getDay()+6)%7;
+ W.d.forEach(function(d,i){var t=TAG[d[1]];h+="<div class='card day"+(i===td?" today":"")+"'><div class='dn'>"+d[0]+"</div><div><span class='tag "+t[0]+"'>"+t[1]+"</span><div>"+d[2]+"</div></div></div>"});
+ h+="<p class='mu'>Pace dan watt hanya panduan. Kalau kamu punya power meter (Stryd atau watt di jam), power lebih stabil daripada pace atau detak jantung karena tidak terpengaruh angin dan tanjakan. Utamakan RPE nyaman (bisa ngobrol) di sesi easy. Naik volume lebih dari ±10% per minggu tidak disarankan.</p>";
+ $("v-plan").innerHTML=h}
+function mv(n){var l=plan().length;S.wk=Math.max(0,Math.min(l-1,S.wk+n));save();viewPlan();window.scrollTo(0,0)}
+
+function viewStr(){
+ var h="<h1>Strength</h1><div class='mu'>Sesi menyesuaikan cedera yang kamu pilih di tab Profil.</div>";
+ h+="<div class='chips' style='margin-top:12px'>"+["A","B"].map(function(x){return "<button class='chip"+(S.sess===x?" on":"")+"' onclick=\"S.sess='"+x+"';save();viewStr()\">Sesi "+x+"</button>"}).join("")+"</div>";
+ h+="<h2>Inti & stabilitas</h2><div class='card'>"+(S.sess==="A"?BASE.slice(0,3):BASE.slice(2)).map(ex).join("")+"</div>";
+ if(!S.inj.length)h+="<div class='card mu'>Belum ada cedera dipilih. Buka tab Profil untuk menambahkan, dan latihan rehab akan muncul di sini.</div>";
+ S.inj.forEach(function(k){h+="<h2>Rehab: "+INJ[k].n+"</h2><div class='card'>"+INJ[k].ex.map(ex).join("")+"</div>"});
+ h+="<div class='warn'>Nyeri saat latihan boleh sampai 3/10 dan harus reda dalam 24 jam. Kalau nyeri tajam, bengkak, membengkok tidak wajar, nyeri malam hari, atau tidak membaik dalam 1–2 minggu, periksa ke dokter atau fisioterapis. Aplikasi ini bukan pengganti saran medis.</div>";
+ $("v-str").innerHTML=h}
+function ex(e){return "<div class='ex'><b>"+e[0]+" · "+e[1]+"</b><span>"+e[2]+"</span></div>"}
+
+function viewSet(){
+ var h="<h1>Profil</h1><div class='mu'>Data tersimpan di perangkat ini.</div>";
+ h+="<label>Tanggal race</label><input type='date' id='f-race' value='"+S.race+"'>";
+ h+="<label>Target waktu (jam:menit)</label><input id='f-goal' value='"+S.goal+"' placeholder='4:30'>";
+ h+="<label>Rata-rata km per minggu sekarang</label><input type='number' id='f-km' value='"+S.km+"'>";
+ h+="<label>Long run terpanjang terakhir (km)</label><input type='number' id='f-long' value='"+S.long+"'>";
+ h+="<label>Critical Power / FTP lari (watt, opsional)</label><input type='number' id='f-cp' value='"+(S.cp||"")+"' placeholder='mis. 250'>";
+ h+="<label>Cedera / area bermasalah</label><div class='chips'>"+Object.keys(INJ).map(function(k){return "<button class='chip"+(S.inj.indexOf(k)>-1?" on":"")+"' onclick=\"tg('"+k+"')\">"+INJ[k].n+"</button>"}).join("")+"</div>";
+ h+="<button class='pri' onclick='sv()'>Simpan & buat program</button>";
+ h+="<h2>Strava</h2>"+stravaCard()+"<div class='card'><div class='mu'>Pendekatan power mengacu pada Steve Palladino (<a href='https://matthewboydphysio.com/running-with-power-meters-101-with-steve-palladino/' target='_blank' rel='noopener'>sumber</a>): Critical Power dipakai sebagai titik acuan zona. Persentase zona di halaman ini (easy 70–80%, marathon 85–90%, tempo 95–100%, interval 105–110% CP) adalah default umum, bukan angka dari Palladino, jadi sesuaikan dengan pelatih atau tes kamu.</div></div>";
+ $("v-set").innerHTML=h}
+function tg(k){rd();var i=S.inj.indexOf(k);i>-1?S.inj.splice(i,1):S.inj.push(k);save();viewSet()}
+function rd(){var g=function(i){return $(i).value};S.race=g("f-race");S.goal=g("f-goal")||"4:30";S.km=+g("f-km")||25;S.long=+g("f-long")||10;S.cp=+g("f-cp")||0}
+function sv(){rd();S.wk=0;save();show("plan")}
+
+function show(v){["plan","str","set"].forEach(function(x){$("v-"+x).classList.toggle("hide",x!==v)});
+ document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("on",b.dataset.v===v)});
+ ({plan:viewPlan,str:viewStr,set:viewSet})[v]();window.scrollTo(0,0)}
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){if(!$("v-set").classList.contains("hide"))try{rd();save()}catch(e){}show(b.dataset.v)}});
+show("plan");
+sync().then(function(){var o=document.querySelector("nav button.on").dataset.v;if(o!=="set")show(o)});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(function(){});
+
+</script>
+</body>
+</html>
